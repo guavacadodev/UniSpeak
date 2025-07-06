@@ -12,6 +12,7 @@ struct UniSpeakApp: App {
     var body: some Scene {
         WindowGroup {
             HomeView()
+                .padding(.horizontal, 20)
         }
     }
 }
