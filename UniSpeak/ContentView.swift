@@ -31,6 +31,11 @@ struct HomeView: View {
                     .transition(.scale)
                     .animation(.spring(), value: viewModel.translatedText)
             }
+            
+            if viewModel.isTranslating {
+                ProgressView("Translating...")
+                    .padding()
+            }
 
             Picker("Language", selection: $viewModel.selectedLanguage) {
                 ForEach(["French", "Spanish", "German", "Japanese", "Chinese"], id: \.self) {
@@ -69,6 +74,7 @@ class HomeViewModel: NSObject, ObservableObject, AVSpeechSynthesizerDelegate {
     @Published var translatedText = ""
     @Published var isListening = false
     @Published var selectedLanguage = "French"
+    @Published var isTranslating = false
 
     private var recognitionTask: SFSpeechRecognitionTask?
     private let speechRecognizer = SFSpeechRecognizer()
@@ -148,8 +154,11 @@ class HomeViewModel: NSObject, ObservableObject, AVSpeechSynthesizerDelegate {
         let finalText = text.trimmingCharacters(in: .whitespacesAndNewlines)
         guard !finalText.isEmpty else { return }
 
+        isTranslating = true // START TRANSLATION
+
         translateWithOpenAI(text: finalText, to: selectedLanguage) { translated in
             DispatchQueue.main.async {
+                self.isTranslating = false // END TRANSLATION
                 self.translatedText = translated
                 self.speak(translated)
             }
